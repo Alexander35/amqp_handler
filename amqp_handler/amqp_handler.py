@@ -31,7 +31,7 @@ class AMQPHandler():
         await queue.bind(exchange, routing_key)
 
         async for message in queue:
-            proc_status = msg_proc_func(message.body)
+            proc_status = msg_proc_func(message.body, self.loop)
             
             if proc_status == True:
                 message.ack()
