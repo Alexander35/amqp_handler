@@ -36,7 +36,7 @@ class AMQPHandler():
             if proc_status == True:
                 message.ack()
 
-def test_msg_processor(msg):
+def test_msg_processor(msg, loop):
     print('{}!!!!'.format(msg) ) 
     return True
 
