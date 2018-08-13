@@ -24,21 +24,24 @@ class AMQPHandler():
                     routing_key               
             )
 
-    async def receive(self, amqp_exchange, amqp_queue, msg_proc_func=None):
+    async def receive(self, amqp_exchange, amqp_queue, msg_proc_func=None, redirect_to_exchange=None, redirect_to_queue=None):
         routing_key = amqp_queue
         exchange = await self.channel.declare_exchange(amqp_exchange, auto_delete=False)
         queue = await self.channel.declare_queue(amqp_queue, auto_delete=False)        
         await queue.bind(exchange, routing_key)
 
         async for message in queue:
-            proc_status = msg_proc_func(message.body, self.loop)
+            proc_status, proc_result = msg_proc_func(message.body)
+
+            if((redirect_to_exchange != None) and (redirect_to_queue != None)):
+                await self.send(redirect_to_exchange, redirect_to_queue, proc_result)
             
             if proc_status == True:
                 message.ack()
 
-def test_msg_processor(msg, loop):
+def test_msg_processor(msg):
     print('{}!!!!'.format(msg) ) 
-    return True
+    return True, msg
 
 def main():
     loop = asyncio.get_event_loop()
