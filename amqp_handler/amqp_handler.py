@@ -6,8 +6,11 @@ class AMQPHandler():
         self.loop = asyncio_loop
 
     async def connect(self, amqp_connect_string="amqp://localhost:5672"):
-        self.connection = await connect_robust(amqp_connect_string)
-        self.channel = await self.connection.channel()
+        try:
+            self.connection = await connect_robust(amqp_connect_string)
+            self.channel = await self.connection.channel()
+        except Exception as exc:
+            await self.connect(amqp_connect_string)    
 
     async def close(self):
         await self.connection.close()
