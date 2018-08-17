@@ -1,5 +1,6 @@
 import asyncio
 from aio_pika import connect_robust, Message
+import time
 
 class AMQPHandler():
     def __init__(self, asyncio_loop):
@@ -10,7 +11,7 @@ class AMQPHandler():
             self.connection = await connect_robust(amqp_connect_string)
             self.channel = await self.connection.channel()
         except Exception as exc:
-            await asyncio.sleep(5)
+            time.sleep(5)
             await self.connect(amqp_connect_string)    
 
     async def close(self):
