@@ -10,6 +10,7 @@ class AMQPHandler():
             self.connection = await connect_robust(amqp_connect_string)
             self.channel = await self.connection.channel()
         except Exception as exc:
+            await asyncio.sleep(5)
             await self.connect(amqp_connect_string)    
 
     async def close(self):
