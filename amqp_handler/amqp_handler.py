@@ -1,18 +1,20 @@
 import asyncio
 from aio_pika import connect_robust, Message
 import time
+from aio_pika.pika.exceptions import AMQPConnectionError, ConnectionClosed, ChannelClosed
 
 class AMQPHandler():
     def __init__(self, asyncio_loop):
         self.loop = asyncio_loop
 
-    async def connect(self, amqp_connect_string="amqp://localhost:5672"):
+    async def connect(self, amqp_connect_string="amqp://guest:guest@127.0.0.1:5672/"):
         try:
-            self.connection = await connect_robust(amqp_connect_string)
+            self.amqp_connect_string = amqp_connect_string
+            self.connection = await connect_robust(self.amqp_connect_string)
             self.channel = await self.connection.channel()
         except Exception as exc:
             time.sleep(5)
-            await self.connect(amqp_connect_string)    
+            await self.connect(self.amqp_connect_string)
 
     async def close(self):
         await self.connection.close()
@@ -40,13 +42,13 @@ class AMQPHandler():
 
             if((redirect_to_exchange != None) and (redirect_to_queue != None)):
                 await self.send(redirect_to_exchange, redirect_to_queue, proc_result)
-            
+
             if proc_status == True:
                 message.ack()
 
 def test_msg_processor(msg):
     print('{}!!!!'.format(msg) ) 
-    return True, msg
+    return True, msg.decode('utf-8')
 
 def main():
     loop = asyncio.get_event_loop()
