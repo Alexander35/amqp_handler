@@ -1,7 +1,7 @@
 import asyncio
 from aio_pika import connect_robust, Message
 import time
-from aio_pika.pika.exceptions import AMQPConnectionError, ConnectionClosed, ChannelClosed
+from aio_pika.exceptions import AMQPConnectionError, ConnectionClosed, ChannelClosed
 
 class AMQPHandler():
     def __init__(self, asyncio_loop):
@@ -57,8 +57,6 @@ def main():
 
     loop.run_until_complete(AMQPH.connect())
     # loop.run_until_complete(AMQPH.send('test_ex', 'test_queue', 'Test Message!'))
-
-    loop.run_until_complete(AMQPH.receive('test_ex', 'test_queue', test_msg_processor))
     loop.close()
 
 if __name__ == "__main__":
