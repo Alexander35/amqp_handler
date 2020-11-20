@@ -31,14 +31,20 @@ class AMQPHandler():
                     routing_key               
             )
 
-    async def receive(self, amqp_exchange, amqp_queue, msg_proc_func=None, redirect_to_exchange=None, redirect_to_queue=None):
+    async def receive(self, amqp_exchange, amqp_queue, msg_proc_func=None, awaitable_msg_proc_func=None, redirect_to_exchange=None, redirect_to_queue=None):
         routing_key = amqp_queue
         exchange = await self.channel.declare_exchange(amqp_exchange, auto_delete=False)
         queue = await self.channel.declare_queue(amqp_queue, auto_delete=False)        
         await queue.bind(exchange, routing_key)
 
         async for message in queue:
-            proc_status, proc_result = msg_proc_func(message.body)
+            mpf = msg_proc_func
+
+            if awaitable_msg_proc_func is not None:
+                mpf = awaitable_msg_proc_func
+                proc_status, proc_result = await mpf(message.body)
+            else:
+                proc_status, proc_result = mpf(message.body)
 
             if((redirect_to_exchange != None) and (redirect_to_queue != None)):
                 await self.send(redirect_to_exchange, redirect_to_queue, proc_result)
